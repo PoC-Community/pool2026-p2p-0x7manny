@@ -36,12 +36,28 @@ contract ProfileSystem {
     error UserAlreadyExists();
     error EmptyUsername();
     error UserNotRegistered();
-    
+
     modifier onlyRegistered() {
-    if (profiles[msg.sender].level == 0) {
-        revert UserNotRegistered();
+        if (profiles[msg.sender].level == 0) {
+            revert UserNotRegistered();
+        }
+        _;
+    } 
+    
+    function createProfile(string calldata _name) external {
+    // TODO: Implement
+        if(bytes(_name).length > 0) {
+            revert EmptyUsername();
+        }
+        if(profiles[msg.sender].level == 0) {
+            revert UserAlreadyExists();
+        }
+        profiles[msg.sender] = UserProfile({
+        username: _name,
+        level: 1,
+        role: Role.USER,
+        lastUpdated: block.timestamp
+        });
     }
-    _;
-}
 
 }
