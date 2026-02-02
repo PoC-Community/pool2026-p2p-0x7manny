@@ -167,4 +167,3 @@ contract SmartContract is ISmartContract {
         _areYouABadPerson = status;
     }
 }
-
