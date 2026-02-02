@@ -43,7 +43,7 @@ contract ProfileSystem {
         }
         _;
     } 
-    
+
     function createProfile(string calldata _name) external {
     // TODO: Implement
         if(bytes(_name).length > 0) {
@@ -58,6 +58,11 @@ contract ProfileSystem {
         role: Role.USER,
         lastUpdated: block.timestamp
         });
+    }
+
+    function levelUp() external onlyRegistered {
+        profiles[msg.sender].level += 1;
+        profiles[msg.sender].lastUpdated = block.timestamp; 
     }
 
 }
