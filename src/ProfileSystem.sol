@@ -42,7 +42,10 @@ contract ProfileSystem {
             revert UserNotRegistered();
         }
         _;
-    } 
+    }
+
+    event ProfileCreated(address indexed user, string username);
+    event LevelUp(address indexed user, uint256 newLevel);
 
     function createProfile(string calldata _name) external {
     // TODO: Implement
@@ -58,11 +61,14 @@ contract ProfileSystem {
         role: Role.USER,
         lastUpdated: block.timestamp
         });
+
+        emit ProfileCreated(msg.sender, _name);
     }
 
     function levelUp() external onlyRegistered {
         profiles[msg.sender].level += 1;
         profiles[msg.sender].lastUpdated = block.timestamp; 
+        emit LevelUp(msg.sender, profiles[msg.sender].level);
     }
 
 }
