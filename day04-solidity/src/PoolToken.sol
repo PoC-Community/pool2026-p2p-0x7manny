@@ -25,6 +25,18 @@ contract PoolToken is ERC20Permit, ERC20Votes, Ownable {
         _burn(msg.sender, amount);
     }
 
+    // ─── Force block.number mode (compatible avec vm.roll dans les tests) ───
+
+    function clock() public view override returns (uint48) {
+        return uint48(block.number);
+    }
+
+    function CLOCK_MODE() public pure override returns (string memory) {
+        return "mode=blocknumber&from=default";
+    }
+
+    // ─── Required overrides ───
+
     function _update(
         address from,
         address to,
