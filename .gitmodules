@@ -7,3 +7,6 @@
 [submodule "day04-solidity/lib/openzeppelin-contracts"]
 	path = day04-solidity/lib/openzeppelin-contracts
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "day04-solidity/lib/solady"]
+	path = day04-solidity/lib/solady
+	url = https://github.com/vectorized/solady

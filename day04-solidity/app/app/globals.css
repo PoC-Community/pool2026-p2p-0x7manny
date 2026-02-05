@@ -1,0 +1,132 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --cyber-purple: #7c3aed;
+  --cyber-cyan: #06b6d4;
+  --cyber-pink: #ec4899;
+  --cyber-green: #10b981;
+}
+
+body {
+  @apply bg-cyber-black text-white min-h-screen;
+  background-image: 
+    radial-gradient(ellipse at top, rgba(124, 58, 237, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at bottom, rgba(6, 182, 212, 0.05) 0%, transparent 50%);
+}
+
+/* Cyberpunk Grid Background */
+.cyber-grid {
+  background-image: 
+    linear-gradient(rgba(124, 58, 237, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124, 58, 237, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+/* Neon Text */
+.neon-text {
+  text-shadow: 
+    0 0 10px var(--cyber-purple),
+    0 0 20px var(--cyber-purple),
+    0 0 30px var(--cyber-purple);
+}
+
+.neon-text-cyan {
+  text-shadow: 
+    0 0 10px var(--cyber-cyan),
+    0 0 20px var(--cyber-cyan);
+}
+
+/* Cyberpunk Card */
+.cyber-card {
+  @apply bg-cyber-dark border border-cyber-purple/30 rounded-lg;
+  background: linear-gradient(135deg, rgba(18, 18, 26, 0.9) 0%, rgba(26, 26, 46, 0.9) 100%);
+  backdrop-filter: blur(10px);
+}
+
+.cyber-card-locked {
+  @apply bg-cyber-dark border border-gray-700/30 rounded-lg opacity-50;
+  background: linear-gradient(135deg, rgba(18, 18, 26, 0.5) 0%, rgba(26, 26, 46, 0.5) 100%);
+}
+
+/* Cyberpunk Button */
+.cyber-btn {
+  @apply px-6 py-3 font-bold uppercase tracking-wider transition-all duration-300;
+  @apply bg-gradient-to-r from-cyber-purple to-cyber-pink;
+  @apply hover:shadow-neon-purple hover:scale-105;
+  @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+}
+
+.cyber-btn-outline {
+  @apply px-6 py-3 font-bold uppercase tracking-wider transition-all duration-300;
+  @apply border-2 border-cyber-cyan text-cyber-cyan bg-transparent;
+  @apply hover:bg-cyber-cyan/10 hover:shadow-neon-cyan;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+}
+
+/* Cyberpunk Input */
+.cyber-input {
+  @apply w-full px-4 py-3 bg-cyber-black border border-cyber-purple/50 rounded;
+  @apply text-white placeholder-gray-500;
+  @apply focus:outline-none focus:border-cyber-purple focus:shadow-neon-purple;
+  @apply transition-all duration-300;
+}
+
+/* Module Status Badge */
+.badge-locked {
+  @apply px-3 py-1 text-xs font-bold uppercase;
+  @apply bg-gray-700/50 text-gray-400 border border-gray-600;
+}
+
+.badge-unlocked {
+  @apply px-3 py-1 text-xs font-bold uppercase;
+  @apply bg-cyber-green/20 text-cyber-green border border-cyber-green/50;
+}
+
+.badge-active {
+  @apply px-3 py-1 text-xs font-bold uppercase;
+  @apply bg-cyber-cyan/20 text-cyber-cyan border border-cyber-cyan/50 animate-pulse;
+}
+
+/* Glitch Effect */
+@keyframes glitch {
+  0% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+  100% { transform: translate(0); }
+}
+
+.glitch:hover {
+  animation: glitch 0.3s infinite;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #12121a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(var(--cyber-purple), var(--cyber-cyan));
+  border-radius: 4px;
+}
+
+/* Stats Card */
+.stat-card {
+  @apply cyber-card p-4 text-center;
+}
+
+.stat-value {
+  @apply text-3xl font-bold text-cyber-cyan;
+}
+
+.stat-label {
+  @apply text-sm text-gray-400 uppercase tracking-wider;
+}
