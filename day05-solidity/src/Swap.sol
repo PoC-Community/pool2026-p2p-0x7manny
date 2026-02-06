@@ -56,4 +56,82 @@ contract Swap is ReentrancyGuard, Ownable {
         (price, lastUpdate) = _getPrice();
         isStale = (block.timestamp - lastUpdate) > staleThreshold;
     }
+
+    function swap() external payable nonReentrant returns (uint256 tokensOut) {
+    // --- Checks ---
+        require(msg.value > 0, "Must send ETH");
+
+        (uint256 priceETH, uint256 updatedAt) = _getPrice();
+        require(block.timestamp - updatedAt <= staleThreshold, "Stale price");
+
+        // --- Effects ---
+        // priceETH = price of 1 ETH in USD, scaled to 1e8 or 1e18 depending on oracle
+        // tokenPriceUSD = price of 1 token in USD, same scale as priceETH
+        // tokenDecimals = ERC20 decimals (e.g. 18)
+
+        tokensOut =
+            (msg.value * priceETH * (10 ** tokenDecimals)) /
+            (1e18 * tokenPriceUSD);
+
+        require(tokensOut > 0, "Zero output");
+        require(token.balanceOf(address(this)) >= tokensOut, "Insufficient liquidity");
+
+        // --- Interactions ---
+        token.safeTransfer(msg.sender, tokensOut);
+
+        emit Swapped(msg.sender, msg.value, tokensOut, priceETH);
+    }
+
+    function previewSwap(uint256 ethAmount)
+    external
+    view
+    returns (uint256 tokensOut, uint256 priceUsed)
+    {
+        require(ethAmount > 0, "Zero ETH");
+
+        (priceUsed, ) = _getPrice();
+
+        tokensOut =
+            (ethAmount * priceUsed * (10 ** tokenDecimals)) /
+            (1e18 * tokenPriceUSD);
+    }
+    
+    function getTokenLiquidity() public view returns (uint256) {
+        return token.balanceOf(address(this));
+    }
+
+    function getMaxSwappableETH() external view returns (uint256 maxEth) {
+        (uint256 priceETH, ) = _getPrice();
+        uint256 tokenBalance = getTokenLiquidity();
+
+        if (priceETH == 0 || tokenBalance == 0) return 0;
+
+        // Inverse formula: tokens → max ETH
+        maxEth =
+            (tokenBalance * 1e18 * tokenPriceUSD) /
+            (priceETH * (10 ** tokenDecimals));
+    }
+
+    function addLiquidity(uint256 amount) external onlyOwner {
+        require(amount > 0, "Zero amount");
+
+        token.safeTransferFrom(msg.sender, address(this), amount);
+    }
+
+    function removeLiquidity(uint256 amount) external onlyOwner {
+        require(amount > 0, "Zero amount");
+        require(token.balanceOf(address(this)) >= amount, "Insufficient liquidity");
+
+        token.safeTransfer(msg.sender, amount);
+    }
+
+    function withdrawETH() external onlyOwner {
+        uint256 balance = address(this).balance;
+        require(balance > 0, "No ETH to withdraw");
+
+        (bool success, ) = owner().call{value: balance}("");
+        require(success, "ETH transfer failed");
+    }
+
+
 }

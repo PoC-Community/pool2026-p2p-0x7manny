@@ -40,4 +40,32 @@ contract SwapTest is Test {
         assertEq(price, 3000e18, "Price should be 3000 USD scaled to 18 decimals");
         assertFalse(isStale, "Price should not be stale");
     }
+
+    function testSwapSuccess() public {
+    address user = address(0x1234);
+    vm.deal(user, 10 ether);
+
+    vm.prank(user);
+    uint256 tokensOut = swap.swap{value: 1 ether}();
+
+    // 1 ETH × $3000 ÷ $1 = 3000 tokens
+    assertEq(tokensOut, 3000 ether);
+    assertEq(mockToken.balanceOf(user), 3000 ether);
+}
+
+    function testSwapZeroValue() public {
+        vm.expectRevert();
+        swap.swap{value: 0}();
+    }
+
+    function testPreviewSwap() public view {
+        (uint256 tokensOut, ) = swap.previewSwap(1 ether);
+        assertEq(tokensOut, 3000 ether);
+    }
+
+    function testGetMaxSwappableETH() public view {
+        uint256 maxEth = swap.getMaxSwappableETH();
+        // 100,000 tokens ÷ $3000 per ETH ≈ 33.33 ETH
+        assertApproxEqAbs(maxEth, 33.333333333333333333 ether, 0.001 ether);
+    }
 }
