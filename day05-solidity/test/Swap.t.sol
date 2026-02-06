@@ -42,16 +42,16 @@ contract SwapTest is Test {
     }
 
     function testSwapSuccess() public {
-    address user = address(0x1234);
-    vm.deal(user, 10 ether);
+        address user = address(0x1234);
+        vm.deal(user, 10 ether);
 
-    vm.prank(user);
-    uint256 tokensOut = swap.swap{value: 1 ether}();
+        vm.prank(user);
+        uint256 tokensOut = swap.swap{value: 1 ether}();
 
-    // 1 ETH × $3000 ÷ $1 = 3000 tokens
-    assertEq(tokensOut, 3000 ether);
-    assertEq(mockToken.balanceOf(user), 3000 ether);
-}
+        // 1 ETH × $3000 ÷ $1 = 3000 tokens
+        assertEq(tokensOut, 3000 ether);
+        assertEq(mockToken.balanceOf(user), 3000 ether);
+    }
 
     function testSwapZeroValue() public {
         vm.expectRevert();

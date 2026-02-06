@@ -12,6 +12,25 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 contract Swap is ReentrancyGuard, Ownable {
     using SafeERC20 for IERC20;
 
+    error InvalidPrice(int256 price);
+    error StalePrice(uint256 updatedAt, uint256 threshold);
+    error ContractPaused();
+
+    // --- Pause state ---
+    bool public paused;
+
+    // --- Events ---
+    event Paused(address indexed by);
+    event Unpaused(address indexed by);
+    event StaleThresholdUpdated(uint256 oldValue, uint256 newValue);
+    event TokenPriceUpdated(uint256 oldValue, uint256 newValue);
+
+    // --- Modifier ---
+    modifier whenNotPaused() {
+        if (paused) revert ContractPaused();
+        _;
+    }
+
     // --- Immutables ---
     AggregatorV3Interface public immutable priceFeed;
     IERC20 public immutable token;
@@ -41,23 +60,50 @@ contract Swap is ReentrancyGuard, Ownable {
     }
 
     function _getPrice() internal view returns (uint256 priceUSD, uint256 updatedAt) {
-        (, int256 answer, , uint256 updatedAt_, ) = priceFeed.latestRoundData();
+        (
+            uint80 roundId,
+            int256 answer,
+            ,
+            uint256 updatedAt_,
+            uint80 answeredInRound
+        ) = priceFeed.latestRoundData();
 
-        require(answer > 0, "Invalid price feed answer");
+        if (answer <= 0) {
+            revert InvalidPrice(answer);
+        }
 
-        // casting to 'uint256' is safe because [explain why]
-        // forge-lint: disable-next-line(unsafe-typecast)
+        if (updatedAt_ > block.timestamp) {
+            revert StalePrice(updatedAt_, staleThreshold);
+        }
 
-        priceUSD = uint256(answer) * 10 ** (18 - feedDecimals);
+        if (block.timestamp - updatedAt_ > staleThreshold) {
+            revert StalePrice(updatedAt_, staleThreshold);
+        }
+
+        if (answeredInRound < roundId) {
+            revert StalePrice(updatedAt_, staleThreshold);
+        }
+
+        uint256 price = uint256(answer);
+
+        if (feedDecimals < 18) {
+            priceUSD = price * (10 ** (18 - feedDecimals));
+        } else if (feedDecimals > 18) {
+            priceUSD = price / (10 ** (feedDecimals - 18));
+        } else {
+            priceUSD = price;
+        }
+
         updatedAt = updatedAt_;
     }
+
 
     function getCurrentPrice() external view returns (uint256 price, bool isStale, uint256 lastUpdate) {
         (price, lastUpdate) = _getPrice();
         isStale = (block.timestamp - lastUpdate) > staleThreshold;
     }
 
-    function swap() external payable nonReentrant returns (uint256 tokensOut) {
+    function swap() external payable nonReentrant whenNotPaused returns (uint256 tokensOut) {
     // --- Checks ---
         require(msg.value > 0, "Must send ETH");
 
@@ -133,5 +179,32 @@ contract Swap is ReentrancyGuard, Ownable {
         require(success, "ETH transfer failed");
     }
 
+    function pause() external onlyOwner {
+    paused = true;
+    emit Paused(msg.sender);
+    }
+
+    function unpause() external onlyOwner {
+        paused = false;
+        emit Unpaused(msg.sender);
+    }
+
+    function setStaleThreshold(uint256 newThreshold) external onlyOwner {
+        require(newThreshold >= 60 && newThreshold <= 86400, "Invalid threshold");
+
+        uint256 old = staleThreshold;
+        staleThreshold = newThreshold;
+
+        emit StaleThresholdUpdated(old, newThreshold);
+    }
+
+    function setTokenPriceUSD(uint256 newPrice) external onlyOwner {
+        require(newPrice > 0, "Invalid price");
+
+        uint256 old = tokenPriceUSD;
+        tokenPriceUSD = newPrice;
+
+        emit TokenPriceUpdated(old, newPrice);
+    }
 
 }
