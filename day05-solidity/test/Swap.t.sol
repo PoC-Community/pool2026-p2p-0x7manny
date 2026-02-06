@@ -1,12 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
+import {Swap} from "../src/Swap.sol";
+import {MockPriceFeed} from "./mocks/MockPriceFeed.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "forge-std/Test.sol";
-import "../src/Swap.sol";
-import "./mocks/MockPriceFeed.sol";
-
-// Simple ERC-20 for testing
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract MockToken is ERC20 {
     constructor() ERC20("Mock", "MCK") {

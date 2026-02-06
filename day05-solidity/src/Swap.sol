@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import {AggregatorV3Interface} from "chainlink-evm/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import {AggregatorV3Interface} from "@chainlink/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+
 
 contract Swap is ReentrancyGuard, Ownable {
     using SafeERC20 for IERC20;
@@ -42,6 +44,9 @@ contract Swap is ReentrancyGuard, Ownable {
         (, int256 answer, , uint256 updatedAt_, ) = priceFeed.latestRoundData();
 
         require(answer > 0, "Invalid price feed answer");
+
+        // casting to 'uint256' is safe because [explain why]
+        // forge-lint: disable-next-line(unsafe-typecast)
 
         priceUSD = uint256(answer) * 10 ** (18 - feedDecimals);
         updatedAt = updatedAt_;
